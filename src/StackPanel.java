@@ -5,60 +5,42 @@ import java.util.List;
 import java.util.Stack;
 
 public class StackPanel extends JPanel {
-
-    private List<Character> stackItems = new ArrayList<>();
+    private List<Character> items = new ArrayList<>();
     private int animOffset = 0;
-    private boolean animatingPush = false;
-    private boolean animatingPop = false;
-
-    private static final Color BG = new Color(13, 17, 30);
-    private static final Color CELL_A = new Color(30, 80, 160);
-    private static final Color CELL_Z = new Color(80, 50, 120);
-    private static final Color CELL_BORDER = new Color(99, 179, 237);
-    private static final Color TEXT_COLOR = Color.WHITE;
-    private static final Color LABEL_COLOR = new Color(100, 130, 180);
 
     public StackPanel() {
-        setBackground(BG);
-        setPreferredSize(new Dimension(140, 0));
+        setBackground(new Color(15, 20, 40));
+        setPreferredSize(new Dimension(160, 0));
     }
 
-    public void setStack(Stack<Character> stack) {
-        stackItems = new ArrayList<>();
-        for (Character c : stack) stackItems.add(c);
+    public void setStack(Stack<Character> s) {
+        items = new ArrayList<>();
+        for (Character c : s) items.add(c);
         animOffset = 0;
         repaint();
     }
 
-    public void animatePush(Stack<Character> newStack) {
-        stackItems = new ArrayList<>();
-        for (Character c : newStack) stackItems.add(c);
-        animOffset = -40;
-        animatingPush = true;
-
+    public void animatePush(Stack<Character> s) {
+        items = new ArrayList<>();
+        for (Character c : s) items.add(c);
+        animOffset = -50;
         Timer t = new Timer(12, null);
         t.addActionListener(e -> {
-            animOffset += 3;
-            if (animOffset >= 0) {
-                animOffset = 0;
-                animatingPush = false;
-                t.stop();
-            }
+            animOffset += 4;
+            if (animOffset >= 0) { animOffset = 0; t.stop(); }
             repaint();
         });
         t.start();
     }
 
-    public void animatePop(Stack<Character> newStack) {
-        animatingPop = true;
+    public void animatePop(Stack<Character> s) {
         Timer t = new Timer(12, null);
         t.addActionListener(e -> {
-            animOffset -= 3;
-            if (animOffset <= -40) {
-                stackItems = new ArrayList<>();
-                for (Character c : newStack) stackItems.add(c);
+            animOffset -= 4;
+            if (animOffset <= -50) {
+                items = new ArrayList<>();
+                for (Character c : s) items.add(c);
                 animOffset = 0;
-                animatingPop = false;
                 t.stop();
             }
             repaint();
@@ -72,70 +54,72 @@ public class StackPanel extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        int w = getWidth();
-        int h = getHeight();
-        int cellH = 44;
-        int cellW = 80;
-        int startX = w / 2 - cellW / 2;
+        int w = getWidth(), h = getHeight();
+        int cellW = 100, cellH = 52;
+        int x = w / 2 - cellW / 2;
 
-        g2.setColor(new Color(20, 28, 50));
+        g2.setColor(new Color(20, 28, 52));
         g2.fillRoundRect(8, 8, w - 16, h - 16, 14, 14);
-        g2.setColor(new Color(40, 55, 90));
-        g2.setStroke(new BasicStroke(1f));
+        g2.setColor(new Color(50, 70, 120));
+        g2.setStroke(new BasicStroke(1.5f));
         g2.drawRoundRect(8, 8, w - 16, h - 16, 14, 14);
 
-        g2.setColor(LABEL_COLOR);
-        g2.setFont(new Font("Courier New", Font.BOLD, 11));
-        String topLabel = "STACK";
-        g2.drawString(topLabel, w / 2 - g2.getFontMetrics().stringWidth(topLabel) / 2, 30);
+        g2.setColor(Color.WHITE);
+        g2.setFont(new Font("SansSerif", Font.BOLD, 15));
+        FontMetrics hfm = g2.getFontMetrics();
+        g2.drawString("STACK", w / 2 - hfm.stringWidth("STACK") / 2, 34);
 
-        g2.setColor(new Color(40, 55, 90));
-        g2.setStroke(new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1f, new float[]{4, 4}, 0));
-        g2.drawLine(startX - 2, h - 52, startX + cellW + 2, h - 52);
-        g2.setStroke(new BasicStroke(1f));
+        int bottomY = h - 60;
 
-        g2.setColor(LABEL_COLOR);
-        g2.setFont(new Font("Courier New", Font.PLAIN, 9));
-        g2.drawString("BOTTOM", w / 2 - 18, h - 38);
+        g2.setColor(new Color(60, 80, 130));
+        g2.setStroke(new BasicStroke(1.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
+                1f, new float[]{5, 5}, 0));
+        g2.drawLine(x - 4, bottomY, x + cellW + 4, bottomY);
+        g2.setStroke(new BasicStroke(1.5f));
 
-        for (int i = 0; i < stackItems.size(); i++) {
-            char sym = stackItems.get(i);
-            int baseY = h - 52 - (i + 1) * cellH;
-            int y = baseY + animOffset;
+        g2.setColor(new Color(140, 160, 200));
+        g2.setFont(new Font("SansSerif", Font.BOLD, 12));
+        FontMetrics bfm = g2.getFontMetrics();
+        g2.drawString("BOTTOM", w / 2 - bfm.stringWidth("BOTTOM") / 2, h - 40);
 
-            boolean isTop = (i == stackItems.size() - 1);
-            Color cellColor = sym == 'Z' ? CELL_Z : CELL_A;
+        for (int i = 0; i < items.size(); i++) {
+            char sym = items.get(i);
+            int cellY = bottomY - (i + 1) * cellH + animOffset;
+            boolean isTop = (i == items.size() - 1);
 
-            GradientPaint gp = new GradientPaint(startX, y, cellColor.brighter(), startX, y + cellH, cellColor.darker());
+            Color base = sym == 'Z' ? new Color(100, 50, 160) : new Color(30, 100, 200);
+            GradientPaint gp = new GradientPaint(x, cellY, base.brighter(), x, cellY + cellH, base);
             g2.setPaint(gp);
-            g2.fillRoundRect(startX, y + 2, cellW, cellH - 4, 10, 10);
+            g2.fillRoundRect(x, cellY + 3, cellW, cellH - 6, 12, 12);
 
-            g2.setColor(isTop ? CELL_BORDER : new Color(60, 100, 160));
-            g2.setStroke(new BasicStroke(isTop ? 2f : 1f));
-            g2.drawRoundRect(startX, y + 2, cellW, cellH - 4, 10, 10);
+            g2.setColor(isTop ? new Color(120, 200, 255) : new Color(60, 100, 180));
+            g2.setStroke(new BasicStroke(isTop ? 2.5f : 1.5f));
+            g2.drawRoundRect(x, cellY + 3, cellW, cellH - 6, 12, 12);
 
-            g2.setColor(TEXT_COLOR);
-            g2.setFont(new Font("Courier New", Font.BOLD, 18));
+            g2.setColor(Color.WHITE);
+            g2.setFont(new Font("SansSerif", Font.BOLD, 22));
             FontMetrics fm = g2.getFontMetrics();
-            g2.drawString(String.valueOf(sym), startX + cellW / 2 - fm.stringWidth(String.valueOf(sym)) / 2, y + cellH / 2 + fm.getAscent() / 2 - 4);
+            g2.drawString(String.valueOf(sym),
+                    x + cellW / 2 - fm.stringWidth(String.valueOf(sym)) / 2,
+                    cellY + cellH / 2 + fm.getAscent() / 2 - 5);
 
             if (isTop) {
-                g2.setColor(CELL_BORDER);
-                g2.setFont(new Font("SansSerif", Font.PLAIN, 9));
-                g2.drawString("TOP", startX + cellW + 4, y + cellH / 2 + 3);
+                g2.setColor(new Color(120, 200, 255));
+                g2.setFont(new Font("SansSerif", Font.BOLD, 11));
+                g2.drawString("◄ TOP", x + cellW + 6, cellY + cellH / 2 + 4);
             }
         }
 
-        if (stackItems.isEmpty()) {
-            g2.setColor(new Color(60, 80, 120));
-            g2.setFont(new Font("Courier New", Font.PLAIN, 11));
-            String empty = "empty";
-            g2.drawString(empty, w / 2 - g2.getFontMetrics().stringWidth(empty) / 2, h / 2);
+        if (items.isEmpty()) {
+            g2.setColor(new Color(80, 100, 150));
+            g2.setFont(new Font("SansSerif", Font.BOLD, 14));
+            FontMetrics fm = g2.getFontMetrics();
+            g2.drawString("empty", w / 2 - fm.stringWidth("empty") / 2, h / 2);
         }
 
-        g2.setColor(new Color(40, 55, 90));
-        g2.setStroke(new BasicStroke(1.5f));
-        g2.drawLine(startX - 2, 40, startX - 2, h - 52);
-        g2.drawLine(startX + cellW + 2, 40, startX + cellW + 2, h - 52);
+        g2.setColor(new Color(60, 80, 130));
+        g2.setStroke(new BasicStroke(2f));
+        g2.drawLine(x - 4, 45, x - 4, bottomY);
+        g2.drawLine(x + cellW + 4, 45, x + cellW + 4, bottomY);
     }
 }
